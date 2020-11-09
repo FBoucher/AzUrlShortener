@@ -10,13 +10,13 @@
             }
         },
         "frontend": {
-           "type": "string",
-           "allowedValues": [
-               "none",
-               "adminBlazorWebsite"
-           ],
-           "defaultValue": "adminBlazorWebsite",
-           "metadata": {
+            "type": "string",
+            "allowedValues": [
+                "none",
+                "adminBlazorWebsite"
+            ],
+            "defaultValue": "adminBlazorWebsite",
+            "metadata": {
                 "description": "Select the frontend that will be deploy. Select 'none', if you don't want any. Frontend available: adminBlazorWebsite, none. "
             }
         },
@@ -25,6 +25,13 @@
             "type": "string",
             "metadata": {
                 "description": "Default URL use when the key pass by the user is not found."
+            }
+        },
+        "ipLocationServiceUrl": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Default URL for the ip location service."
             }
         },
         "GitHubURL": {
@@ -41,50 +48,48 @@
                 "description": "Name of the branch to use when deploying (Default = main)."
             }
         },
-        "ExpireOn":{
-            "type":"string",
-            "defaultValue":"[utcNow('yyyy-MM-dd')]",
+        "ExpireOn": {
+            "type": "string",
+            "defaultValue": "[utcNow('yyyy-MM-dd')]",
             "metadata": {
                 "description": "Just a text value (format: yyyy-MM-dd) that express when it is safe to delete these resources"
             }
         },
-        "OwnerName":{
-            "type":"string",
+        "OwnerName": {
+            "type": "string",
             "defaultValue": "",
             "metadata": {
                 "description": "Owner of this deployment, person to contact for question."
             }
         },
         "frontend-AdminEMail": {
-           "type": "string",
-           "defaultValue": "",
-           "metadata": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
                 "description": "(Required only if frontend = adminBlazorWebsite) The EMail use to connect into the admin Blazor Website."
             }
         },
         "frontend-AdminPassword": {
-           "type": "securestring",
-           "defaultValue": "",
-           "metadata": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
                 "description": "(Required only if frontend = adminBlazorWebsite) Password use to connect into the admin Blazor Website. It MOST have: an uppercase character,a lowercase character, a digit, a non-alphanumeric character, must be at least six (6) characters long."
             }
         }
     },
-    "variables":{
+    "variables": {
         "suffix": "[substring(toLower(uniqueString(resourceGroup().id, resourceGroup().location)),0,5)]",
         "funcAppName": "[toLower(concat(parameters('baseName'), variables('suffix')))]",
         "funcStorageAccountName": "[tolower(concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),16)), variables('suffix'), 'stg'))]",
         "funcHhostingPlanName": "[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), variables('suffix'), 'plan')]",
-        "insightsAppName":"[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), variables('suffix'), '-meta')]",
+        "insightsAppName": "[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), variables('suffix'), '-meta')]",
         "functionProjectFolder": "src/shortenerTools",
         "UrlsStorageAccountName": "[concat('urldata', variables('suffix'), 'stg')]",
         "frontendInfo": {
-            "adminBlazorWebsite": { 
-                "armTemplateUrl": "[concat('https://raw.githubusercontent.com/FBoucher/AzUrlShortener/', parameters('GitHubBranch'), '/src/adminTools/adminBlazorWebsite/deployment/adminBlazorWebsite-deployAzure.json')]"
-            }
+          "adminBlazorWebsite": {
+            "armTemplateUrl": "[concat('https://raw.githubusercontent.com/FBoucher/AzUrlShortener/', parameters('GitHubBranch'), '/src/adminTools/adminBlazorWebsite/deployment/adminBlazorWebsite-deployAzure.json')]"
+          }
         }
-            
-        
     },
     "resources": [
         {
@@ -150,20 +155,24 @@
                         {
                             "name": "defaultRedirectUrl",
                             "value": "[parameters('defaultRedirectUrl')]"
+                        },
+                        {
+                            "name": "IpLocationService:Url",
+                            "value": "[parameters('ipLocationServiceUrl')]"
                         }
                     ]
                 },
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('funcHhostingPlanName'))]",                
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('funcHhostingPlanName'))]",
                 "hostingEnvironment": "",
                 "clientAffinityEnabled": true
             },
             "resources": [
                 {
                     "apiVersion": "2018-11-01",
-                    "type":"sourcecontrols",
+                    "type": "sourcecontrols",
                     "name": "web",
                     "dependsOn": [
-                      "[resourceId('Microsoft.Web/sites/', variables('funcAppName'))]"
+                        "[resourceId('Microsoft.Web/sites/', variables('funcAppName'))]"
                     ],
                     "properties": {
                         "repoUrl": "[parameters('GitHubURL')]",
@@ -254,36 +263,36 @@
                 },
                 "parameters": {
                     "basename": {
-                        "value" : "[concat('adm', parameters('baseName'))]"
+                        "value": "[concat('adm', parameters('baseName'))]"
                     },
                     "AdminEMail": {
-                        "value" : "[parameters('frontend-AdminEMail')]"
+                        "value": "[parameters('frontend-AdminEMail')]"
                     },
                     "AdminPassword": {
-                        "value" : "[parameters('frontend-AdminPassword')]"
+                        "value": "[parameters('frontend-AdminPassword')]"
                     },
                     "AzureFunctionUrl": {
-                        "value" : "[concat('https://', reference(resourceId('Microsoft.Web/sites/', variables('funcAppName')), '2018-02-01').hostNames[0])]"
+                        "value": "[concat('https://', reference(resourceId('Microsoft.Web/sites/', variables('funcAppName')), '2018-02-01').hostNames[0])]"
                     },
                     "SecurityCode": {
-                        "value" : "[listkeys(concat(resourceId('Microsoft.Web/sites/', variables('funcAppName')), '/host/default/'),'2016-08-01').functionKeys.default]"
+                        "value": "[listkeys(concat(resourceId('Microsoft.Web/sites/', variables('funcAppName')), '/host/default/'),'2016-08-01').functionKeys.default]"
                     },
                     "GitHubURL": {
-                        "value" : "[parameters('GitHubURL')]"
+                        "value": "[parameters('GitHubURL')]"
                     },
                     "GitHubBranch": {
-                        "value" : "[parameters('GitHubBranch')]"
+                        "value": "[parameters('GitHubBranch')]"
                     },
                     "ExpireOn": {
-                        "value" : "[parameters('ExpireOn')]"
+                        "value": "[parameters('ExpireOn')]"
                     },
                     "OwnerName": {
-                        "value" : "[parameters('OwnerName')]"
+                        "value": "[parameters('OwnerName')]"
                     }
 
                 }
             }
         }
     ],
-    "outputs":{}
+    "outputs": {}
 }

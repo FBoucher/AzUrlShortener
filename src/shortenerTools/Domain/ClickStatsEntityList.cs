@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Cloud5mins.domain
@@ -7,8 +6,8 @@ namespace Cloud5mins.domain
     {
         public List<ClickStatsEntity> ClickStatsList { get; set; }
 
-        public ClickStatsEntityList(){}
-        public ClickStatsEntityList (List<ClickStatsEntity> list)
+        public ClickStatsEntityList() { }
+        public ClickStatsEntityList(List<ClickStatsEntity> list)
         {
             ClickStatsList = list;
         }

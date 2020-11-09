@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,29 +10,28 @@ namespace adminBlazorWebsite.Data
     {
         public static async Task Initialize(IServiceProvider serviceProvider, string defaultAdminEMail, string testUserPw)
         {
-            using (var context = new ApplicationDbContext(
-                serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>()))
-            {
-                // For sample purposes seed both with the same password.
-                // Password is set with the following:
-                // dotnet user-secrets set SeedUserPW <pw>
-                // The admin user can do anything
+            await using var context = new ApplicationDbContext(
+                serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>());
+            // For sample purposes seed both with the same password.
+            // Password is set with the following:
+            // dotnet user-secrets set SeedUserPW <pw>
+            // The admin user can do anything
 
-                var adminID = await EnsureUser(serviceProvider, testUserPw, defaultAdminEMail);
-                await EnsureRole(serviceProvider, adminID, "admin");
-            }
+            var adminId = await EnsureUser(serviceProvider, testUserPw, defaultAdminEMail);
+            await EnsureRole(serviceProvider, adminId, "admin");
         }
 
         private static async Task<string> EnsureUser(IServiceProvider serviceProvider,
-                                                    string testUserPw, string UserName)
+                                                    string testUserPw, string userName)
         {
             var userManager = serviceProvider.GetService<UserManager<IdentityUser>>();
 
-            var user = await userManager.FindByNameAsync(UserName);
+            var user = await userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                user = new IdentityUser {
-                    UserName = UserName,
+                user = new IdentityUser
+                {
+                    UserName = userName,
                     EmailConfirmed = true
                 };
                 await userManager.CreateAsync(user, testUserPw);
@@ -50,7 +48,6 @@ namespace adminBlazorWebsite.Data
         private static async Task<IdentityResult> EnsureRole(IServiceProvider serviceProvider,
                                                                       string uid, string role)
         {
-            IdentityResult IR = null;
             var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
 
             if (roleManager == null)
@@ -60,21 +57,21 @@ namespace adminBlazorWebsite.Data
 
             if (!await roleManager.RoleExistsAsync(role))
             {
-                IR = await roleManager.CreateAsync(new IdentityRole(role));
+                await roleManager.CreateAsync(new IdentityRole(role));
             }
 
             var userManager = serviceProvider.GetService<UserManager<IdentityUser>>();
 
             var user = await userManager.FindByIdAsync(uid);
 
-            if(user == null)
+            if (user == null)
             {
                 throw new Exception("The testUserPw password was probably not strong enough!");
             }
-            
-            IR = await userManager.AddToRoleAsync(user, role);
 
-            return IR;
+            var identityResult = await userManager.AddToRoleAsync(user, role);
+
+            return identityResult;
         }
     }
 }

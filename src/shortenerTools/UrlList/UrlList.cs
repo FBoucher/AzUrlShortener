@@ -15,75 +15,82 @@ Output:
     }
 */
 
-using System;
-using System.Threading.Tasks;
+using Cloud5mins.domain;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using System.Net;
-using Cloud5mins.domain;
-using Microsoft.Extensions.Configuration;
+using shortenerTools.Abstractions;
+using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace Cloud5mins.Function
 {
-    public static class UrlList
+    public class UrlList : FunctionBase
     {
+        private readonly IStorageTableHelper _storageTableHelper;
+
+        public UrlList(IStorageTableHelper storageTableHelper)
+        {
+            _storageTableHelper = storageTableHelper;
+        }
+
         [FunctionName("UrlList")]
-        public static async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+        public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequestMessage req,
         ILogger log,
         ExecutionContext context,
         ClaimsPrincipal principal)
         {
             log.LogInformation($"C# HTTP trigger function processed this request: {req}");
 
-            var result = new ListResponse();
-            string userId = string.Empty;
-            var config = new ConfigurationBuilder()
-                .SetBasePath(context.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
+            var (requestValid, invalidResult, result) = await ValidateRequestAsync<ListResponse>(context, req, principal, log);
 
-            StorageTableHelper stgHelper = new StorageTableHelper(config["UlsDataStorage"]);
+            if (!requestValid)
+            {
+                return invalidResult;
+            }
 
             try
             {
-                var invalidRequest = Utility.CatchUnauthorize(principal, log);
-                if (invalidRequest != null)
+                result.UrlList = await _storageTableHelper.GetAllShortUrlEntities();
+                result.UrlList = result.UrlList.Where(p => !(p.IsArchived ?? false)).ToList();
+                var host = req.RequestUri.GetLeftPart(UriPartial.Authority);
+                foreach (var shortUrl in result.UrlList)
                 {
-                    return invalidRequest;
-                }
-                else
-                {
-                    userId = principal.FindFirst(ClaimTypes.GivenName).Value;
-                    log.LogInformation("Authenticated user {user}.", userId);
+                    shortUrl.ShortUrl = Utility.GetShortUrl(host, shortUrl.RowKey);
                 }
 
-                result.UrlList = await stgHelper.GetAllShortUrlEntities();
-                result.UrlList = result.UrlList.Where(p => !(p.IsArchived ?? false)).ToList();
-                //var host = req.HttpContext.RequestUri.GetLeftPart(UriPartial.Authority);
-                var host = req.Host.Host;
-                foreach (ShortUrlEntity url in result.UrlList)
-                {
-                    url.ShortUrl = Utility.GetShortUrl(host, url.RowKey);
-                }
+                return new OkObjectResult(result);
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "An unexpected error was encountered.");
+                log.LogError(ex, "{functionName} failed due to an unexpected error: {errorMessage}.",
+                    context.FunctionName, ex.GetBaseException().Message);
+
                 return new BadRequestObjectResult(new
                 {
                     message = ex.Message,
-                    StatusCode =  HttpStatusCode.BadRequest
+                    StatusCode = HttpStatusCode.BadRequest
                 });
             }
+        }
 
-            return new OkObjectResult(result);
+        public override async Task<(bool isValidRequest, IActionResult invalidResult, T requestType)> ValidateRequestAsync<T>(ExecutionContext context, HttpRequestMessage req, ClaimsPrincipal principal, ILogger log)
+        {
+            var invalidRequest = Utility.CatchUnauthorized(principal, log);
+            if (invalidRequest != null)
+            {
+                return (false, invalidRequest, null as T);
+            }
+
+            LogAuthenticatedUser(principal, context, log);
+
+            return (true, null, new T());
         }
     }
 }

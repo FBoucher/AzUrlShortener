@@ -38,7 +38,14 @@ else
                     <td>
                         <span title="@url.Url">@url.GetDisplayableUrl()</span>
                     </td>
-                    <td>@url.Clicks</td>
+                    <td>
+                        <ul>
+                            @foreach (var (country, clicks) in url.Clicks)
+                            {
+                                <li>@country: @clicks</li>
+                            }
+                        </ul>
+                    </td>
                     <td><button type="button" class="btn btn-outline-primary btn-sm" @onclick="@(() => EditShortUrl(url))">Edit</button></td>
                     <td><button type="button" class="btn btn-outline-primary btn-sm" @onclick="@(() => ArchiveShortUrl(url))">Archive</button></td>
                 </tr>
@@ -47,8 +54,7 @@ else
     </table>
     <p>
         <!-- Add a new ShortUrl -->
-        <button class="btn btn-primary"
-                @onclick="CreateShortUrl">
+        <button class="btn btn-primary" @onclick="CreateShortUrl">
             Add New Url
         </button>
     </p>
@@ -58,27 +64,29 @@ else
 {
     <Modal Title="Short Url Request" ClosePopup="ClosePopup">
         <EditForm Model="shortUrlRequest" OnValidSubmit="SaveShortUrl">
-            <DataAnnotationsValidator />
-            <div>
+            <FluentValidationValidator />
+            <div class="form-group">
                 <label for="title">Title</label>
                 <InputText id="title" class="form-control" placeholder="Title or description for this URL" @bind-Value="shortUrlRequest.Title" />
                 <ValidationMessage For="@(() => shortUrlRequest.Title)" />
             </div>
             <br />
-            <div>
+            <div class="form-group">
                 <label for="url">The Url to redirect</label>
                 <InputText id="url" class="form-control" placeholder="The Url to redirect" @bind-Value="shortUrlRequest.Url" />
                 <ValidationMessage For="@(() => shortUrlRequest.Url)" />
             </div>
             <br />
-            <div>
+            <div class="form-group">
                 <label for="vanity">Vanity</label>
                 <InputText id="vanity" class="form-control" placeholder="Vanity or the 'End' part of the Url" @bind-Value="shortUrlRequest.Vanity" />
                 <ValidationMessage For="@(() => shortUrlRequest.Vanity)" />
             </div>
-            <button class="btn btn-primary" type="submit">
-                Save
-            </button>
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit">
+                    Save
+                </button>
+            </div>
         </EditForm>
     </Modal>
 }
@@ -88,21 +96,22 @@ else
 {
     <Modal Title="Edit Short Url" ClosePopup="ClosePopup">
         <EditForm Model="editedUrl" OnValidSubmit="SaveUpdatedShortUrl">
-            <DataAnnotationsValidator />
-            <div>
+            <FluentValidationValidator />
+            <div class="form-group">
                 <label for="edit-title">Title</label>
                 <InputText id="edit-title" class="form-control" placeholder="Title or description for this URL" @bind-Value="editedUrl.Title" />
                 <ValidationMessage For="@(() => editedUrl.Title)" />
             </div>
-            <br />
-            <div>
+            <div class="form-group">
                 <label for="edit-url">The Url to redirect</label>
                 <InputText id="edit-url" class="form-control" placeholder="The Url to redirect" @bind-Value="editedUrl.Url" />
                 <ValidationMessage For="@(() => editedUrl.Url)" />
             </div>
-            <button class="btn btn-primary" type="submit">
-                Save
-            </button>
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit">
+                    Save
+                </button>
+            </div>
         </EditForm>
     </Modal>
 }

@@ -1,20 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using adminBlazorWebsite.Areas.Identity;
+using adminBlazorWebsite.Data;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using adminBlazorWebsite.Areas.Identity;
-using adminBlazorWebsite.Data;
 
 namespace adminBlazorWebsite
 {
@@ -22,10 +15,10 @@ namespace adminBlazorWebsite
     {
         public Startup(IConfiguration configuration)
         {
-            _config = configuration;
+            Config = configuration;
         }
 
-        public IConfiguration _config { get; }
+        public IConfiguration Config { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -33,14 +26,14 @@ namespace adminBlazorWebsite
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(
-                    _config.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => {options.SignIn.RequireConfirmedAccount = true;})
+                    Config.GetConnectionString("DefaultConnection")));
+            services.AddDefaultIdentity<IdentityUser>(options => { options.SignIn.RequireConfirmedAccount = true; })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            services.Configure<AppSettings>(_config.GetSection("AppSettings")); 
+            services.Configure<AppSettings>(Config.GetSection("AppSettings"));
             services.AddSingleton<UrlShortenerService>();
         }
 

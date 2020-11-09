@@ -5,23 +5,26 @@
         "baseName": {
             "value": "AzUrlShortTools"
         },
-        "OwnerName": {
-            "value": "Frank"
-        },
-        "GitHubBranch": {
-            "value": "feature/deploy-it-all"
-        },
+      "OwnerName": {
+        "value": "Frank"
+      },
+      "GitHubBranch": {
+        "value": "feature/deploy-it-all"
+      },
         "defaultRedirectUrl": {
             "value": "https://azure.com"
+        },
+        "ipLocationServiceUrl": {
+            "value": "https://freegeoip.app/"
         },
         "frontend": {
             "value": "adminBlazorWebsite"
         },
-        "frontend-AdminEMail": {
-            "value": "test@test.com"
-        },
-        "frontend-AdminPassword": {
-            "value": "Supernewt42!"
-        }
+      "frontend-AdminEMail": {
+        "value": "test@test.com"
+      },
+      "frontend-AdminPassword": {
+        "value": "Supernewt42!"
+      }
     }
 }

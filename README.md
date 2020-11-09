@@ -20,6 +20,7 @@ Features:
 - 1-Click deployment (currently only in [V1](https://github.com/FBoucher/AzUrlShortener/tree/main-v1)).
 - Create Edit and Delete short URL.
 - Keep Statistics of your clicks.
+    - Click statistics by country
 - Budget-friendly and 100% open-source.
 
 **[Version 1](https://github.com/FBoucher/AzUrlShortener/tree/main-v1)**

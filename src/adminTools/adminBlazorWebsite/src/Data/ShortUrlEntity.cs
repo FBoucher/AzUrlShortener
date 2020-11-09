@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace  adminBlazorWebsite.Data
+namespace adminBlazorWebsite.Data
 {
     public class ShortUrlEntity
     {
@@ -17,9 +18,9 @@ namespace  adminBlazorWebsite.Data
 
         public string ShortUrl { get; set; }
 
-        public int Clicks { get; set; }
+        public Dictionary<string, int> Clicks { get; set; } = new Dictionary<string, int>();
 
-        public ShortUrlEntity(){}
+        public ShortUrlEntity() { }
 
         public static ShortUrlEntity GetEntity(string longUrl, string endUrl)
         {
@@ -31,15 +32,13 @@ namespace  adminBlazorWebsite.Data
             };
         }
 
-        public string GetDisplayableUrl(){
+        public string GetDisplayableUrl()
+        {
 
-            var lenght = Url.ToString().Length;
-            if (lenght >= 50){
-                return string.Concat(Url.Substring(0,49), "...");
-            }
-            return Url;
+            var length = Url.Length;
+            return length >= 50 
+                ? string.Concat(Url.Substring(0, 49), "...") 
+                : Url;
         }
     }
-
-
 }

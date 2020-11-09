@@ -4,7 +4,7 @@
 
 
 <EditForm Model="@shortUrlRequest" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
+    <FluentValidationValidator />
     <ValidationSummary />
 
     <div class="form-group">
@@ -16,9 +16,10 @@
         <label for="Vanity"></label>
         <InputText id="vanity" @bind-Value="shortUrlRequest.Vanity" />
     </div>
-    
-    <button class="btn btn-primary" type="submit">Submit</button>
-    <button class="btn btn-secondary" type="button">Cancel</button>
+    <div class="form-group">
+        <button class="btn btn-primary" type="submit">Submit</button>
+        <button class="btn btn-secondary" type="button">Cancel</button>
+    </div>
 </EditForm>
 
 

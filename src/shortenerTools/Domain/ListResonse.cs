@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Cloud5mins.domain
@@ -7,8 +6,8 @@ namespace Cloud5mins.domain
     {
         public List<ShortUrlEntity> UrlList { get; set; }
 
-        public ListResponse(){}
-        public ListResponse (List<ShortUrlEntity> list)
+        public ListResponse() { }
+        public ListResponse(List<ShortUrlEntity> list)
         {
             UrlList = list;
         }

@@ -1,86 +1,63 @@
-using System;
-using System.Threading.Tasks;
+using Cloud5mins.domain;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using shortenerTools.Abstractions;
+using System;
 using System.Net;
 using System.Net.Http;
-using Cloud5mins.domain;
-using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json;
-using System.IO;
+using System.Threading.Tasks;
 
 namespace Cloud5mins.Function
 {
-    public static class UrlClickStats
+    public class UrlClickStats : FunctionBase
     {
+        private readonly IStorageTableHelper _storageTableHelper;
+
+        public UrlClickStats(IStorageTableHelper storageTableHelper)
+        {
+            _storageTableHelper = storageTableHelper;
+        }
+
         [FunctionName("UrlClickStats")]
-        public static async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
+        public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
         ILogger log,
         ExecutionContext context,
         ClaimsPrincipal principal)
         {
             log.LogInformation($"C# HTTP trigger function processed this request: {req}");
 
-            string userId = string.Empty;
-            UrlClickStatsRequest input;
-            var result = new ClickStatsEntityList();
-
-            var invalidRequest = Utility.CatchUnauthorize(principal, log);
-
-            if (invalidRequest != null)
-            {
-                return invalidRequest;
-            }
-            else
-            {
-                userId = principal.FindFirst(ClaimTypes.NameIdentifier).Value;
-                log.LogInformation("Authenticated user {user}.", userId);
-            }
+            var (requestValid, invalidResult, clickStatsRequest) = await ValidateRequestAsync<UrlClickStatsRequest>(context, req, principal, log);
 
             // Validation of the inputs
-            if (req == null)
+            if (!requestValid)
             {
-                return new BadRequestObjectResult(new { StatusCode = HttpStatusCode.NotFound });
+                return invalidResult;
             }
 
             try
             {
-                using (var reader = new StreamReader(req.Body))
+                var result = new ClickStatsEntityList
                 {
-                    var strBody = reader.ReadToEnd();
-                    input = JsonSerializer.Deserialize<UrlClickStatsRequest>(strBody, new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
-                    if (input == null)
-                    {
-                        return new BadRequestObjectResult(new { StatusCode = HttpStatusCode.NotFound });
-                    }
-                }
+                    ClickStatsList = await _storageTableHelper.GetAllStatsByVanity(clickStatsRequest.Vanity)
+                };
 
-                var config = new ConfigurationBuilder()
-                    .SetBasePath(context.FunctionAppDirectory)
-                    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                    .AddEnvironmentVariables()
-                    .Build();
-
-                StorageTableHelper stgHelper = new StorageTableHelper(config["UlsDataStorage"]);
-
-                result.ClickStatsList = await stgHelper.GetAllStatsByVanity(input.Vanity);
+                return new OkObjectResult(result);
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "An unexpected error was encountered.");
+                log.LogError(ex, "{functionName} failed due to an unexpected error: {errorMessage}.",
+                    context.FunctionName, ex.GetBaseException().Message);
+
                 return new BadRequestObjectResult(new
                 {
                     message = ex.Message,
                     StatusCode = HttpStatusCode.BadRequest
                 });
             }
-
-            return new OkObjectResult(result);
         }
     }
 }

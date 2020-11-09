@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace adminBlazorWebsite.Data
 {
@@ -10,11 +9,14 @@ namespace adminBlazorWebsite.Data
         public string Title { get; set; }
 
 
-        public string Vanity { 
-            get{
-                return (_vanity != null)?_vanity:string.Empty;
+        public string Vanity
+        {
+            get
+            {
+                return (_vanity != null) ? _vanity : string.Empty;
             }
-            set{
+            set
+            {
                 _vanity = value;
             }
         }

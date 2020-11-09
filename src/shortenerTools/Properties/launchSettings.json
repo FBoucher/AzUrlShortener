@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "shortenerTools": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
