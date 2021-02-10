@@ -45,7 +45,8 @@ namespace Cloud5mins.Function
                     newUrl.Clicks++;
                     stgHelper.SaveClickStatsEntity(new ClickStatsEntity(newUrl.RowKey));
                     await stgHelper.SaveShortUrlEntity(newUrl);
-                    redirectUrl = WebUtility.UrlDecode(newUrl.Url);
+                    redirectUrl = newUrl.Url
+                    ;
                 }
             }
             else

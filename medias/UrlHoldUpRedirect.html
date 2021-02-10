@@ -1,0 +1,53 @@
+<html>
+<head>
+    <title>HoldUp-Redirect</title>
+    <style>
+
+    html {
+    background-color: rgb(19, 23, 44);
+    }
+
+    body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    vertical-align: middle;
+    }
+
+    div{
+    color: white;
+    text-align: center;
+    }
+
+    button {
+    color: #1D9AF2;
+    background-color: #292D3E;
+    border: 1px solid #1D9AF2;
+    border-radius: 4px;
+    padding: 0 15px;
+    cursor: pointer;
+    height: 32px;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+    }
+    button:hover {
+    transform: scale(1.1);
+    }
+      
+    </style>
+</head>
+<body>
+<div>
+    <p>&nbsp;</p>
+    <h1>HoldUp-Redirect</h1>
+    <p>&nbsp;</p>
+    <p>The ShortLink belongs to <b>%%HtmlEncoded_redirectUrl%%</b></p>
+    <p>&nbsp;</p>
+    <a href="%%redirectUrl%%"><button>Go to Target-URL</button></a>
+    <p>&nbsp;</p>
+</div>
+</body>
+</html>
