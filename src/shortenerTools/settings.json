@@ -6,6 +6,8 @@
     "FUNCTIONS_V2_COMPATIBILITY_MODE":"true",
     "UlsDataStorage":"",
     "defaultRedirectUrl":"https://azure.com",
-    "customDomain":"https://c5m.ca"
+    "customDomain":"https://c5m.ca",
+    "ServiceBusConnection": "Endpoint=sb://.....Endpointurl",
+    "ServiceBusQueName": "ArchiveQue"
   }
 }

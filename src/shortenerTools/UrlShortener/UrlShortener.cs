@@ -11,6 +11,9 @@ Input:
 
         // [Optional] the end of the URL. If nothing one will be generated for you.
         "vanity": "azFunc"
+
+        // [Optional] DateTime when to automaticly archive the short url.
+        "expire": "2021-01-02T17:01:13Z"
     }
 
 Output:
@@ -33,6 +36,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Text.Json;
+using Azure.Messaging.ServiceBus;
+using shortenerTools.Domain;
 
 namespace Cloud5mins.Function
 {
@@ -127,11 +132,39 @@ namespace Cloud5mins.Function
                 }
 
                 await stgHelper.SaveShortUrlEntity(newRow);
+                var host = string.IsNullOrEmpty(config["customDomain"]) ? req.Host.Host : config["customDomain"].ToString();
 
-                var host = string.IsNullOrEmpty(config["customDomain"]) ? req.Host.Host: config["customDomain"].ToString();
+                DateTime expire = input.Expire.ToUniversalTime();
+
+                if (expire != DateTime.MinValue)
+                {
+                    if (expire <= DateTime.UtcNow)
+                    {
+                        return new BadRequestObjectResult(new
+                        {
+                            message = $"The expire parameter has already passed. We are not a time traveler ;)",
+                            StatusCode = HttpStatusCode.BadRequest
+                        });
+                    }
+                    await using (ServiceBusClient client = new ServiceBusClient(config["ServiceBusConnection"]))
+                    {
+                        ServiceBusSender sender = client.CreateSender(config["ServiceBusQueName"]);
+                        ServiceBusMessage message = new ServiceBusMessage(JsonSerializer.Serialize(newRow))
+                        {
+                            ScheduledEnqueueTime = expire,
+                        };
+                        await sender.SendMessageAsync(message);
+
+                    }
+
+                    log.LogInformation("Short Url with automatic archiving created");
+                    return new OkObjectResult(new ShortResponseWithExpirationDate(host, newRow.Url, newRow.RowKey, newRow.Title, expire));
+                }
+
                 result = new ShortResponse(host, newRow.Url, newRow.RowKey, newRow.Title);
 
                 log.LogInformation("Short Url created.");
+
             }
             catch (Exception ex)
             {
