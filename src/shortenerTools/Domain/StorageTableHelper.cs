@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
 
@@ -85,6 +86,32 @@ namespace Cloud5mins.domain
             return lstShortUrl;
         }
 
+        /// <summary>
+        /// Returns the ShortUrlEntity of the <paramref name="vanity"/>
+        /// </summary>
+        /// <param name="vanity"></param>
+        /// <returns>ShortUrlEntity</returns>
+        public async Task<ShortUrlEntity> GetShortUrlEntityByVanity(string vanity)
+        {
+            var tblUrls = GetUrlsTable();
+            TableContinuationToken token = null;
+            ShortUrlEntity shortUrlEntity = null;
+            do
+            {
+                TableQuery<ShortUrlEntity> query = new TableQuery<ShortUrlEntity>().Where(
+                    filter: TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, vanity));
+                var queryResult = await tblUrls.ExecuteQuerySegmentedAsync(query, token);
+                shortUrlEntity = queryResult.Results.FirstOrDefault();
+            } while (token != null);
+
+            return shortUrlEntity;
+        }
+
+        public async Task<bool> IfShortUrlEntityExistByVanity(string vanity)
+        {
+            ShortUrlEntity shortUrlEntity = await GetShortUrlEntityByVanity(vanity);
+            return (shortUrlEntity != null);
+        }
 
         public async Task<bool> IfShortUrlEntityExist(ShortUrlEntity row)
         {

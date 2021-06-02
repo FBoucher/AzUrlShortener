@@ -1,14 +1,14 @@
-﻿/*
+/*
 ```c#
 Input:
-    {
-         // [Required]
-        "PartitionKey": "d",
+   {
+        // [Required]
+       "PartitionKey": "d",
 
-         // [Required]
-        "RowKey": "doc",
+        // [Required]
+       "RowKey": "doc",
 
-    }
+   }
 
 
 */
@@ -18,18 +18,18 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using System.Net;
 using System.Net.Http;
 using Cloud5mins.domain;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Cloud5mins.Function
 {
     public static class UrlArchive
     {
         [FunctionName("UrlArchive")]
-        public static async Task<HttpResponseMessage> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequestMessage req,
+        public static async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req,
         ILogger log,
         ExecutionContext context)
         {
@@ -38,13 +38,13 @@ namespace Cloud5mins.Function
             // Validation of the inputs
             if (req == null)
             {
-                return req.CreateResponse(HttpStatusCode.NotFound);
+                return new NotFoundResult();
             }
 
             ShortUrlEntity input = await req.Content.ReadAsAsync<ShortUrlEntity>();
             if (input == null)
             {
-                return req.CreateResponse(HttpStatusCode.NotFound);
+                return new NotFoundResult();
             }
 
             ShortUrlEntity result;
@@ -63,10 +63,10 @@ namespace Cloud5mins.Function
             catch (Exception ex)
             {
                 log.LogError(ex, "An unexpected error was encountered.");
-                return req.CreateResponse(HttpStatusCode.BadRequest, ex);
+                return new BadRequestObjectResult(ex);
             }
 
-            return req.CreateResponse(HttpStatusCode.OK, result);
+            return new OkObjectResult(result);
         }
     }
 }
